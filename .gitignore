@@ -1,0 +1,4 @@
+terraform/.terraform/*
+plan.out
+images/*.dtmp
+images/*.bkp
