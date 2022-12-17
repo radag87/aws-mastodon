@@ -13,6 +13,10 @@ WIP mastodon running on aws serverless
 * There are many ways to drive down costs. This template is not one of them. Review the toggles to see what can be turned off to save money. I made this template with the focus on having AWS be your "IT resource". Everything that can be serverless is. If you have an IT resource, then spend money on him/her/them. Bezos is rich enough.
 * I am what can be charitably be described as a curmudgeon. However, I love my wife. And she wants a mastodon site. So...
 
+## windows
+
+I have managed to avoid using a Windows computer since Windows XP. That means that all of my examples are meant to be run from bash. If you have a Windows machine with WSL, you may be sucessful using this Terraform. Otherwise feel free to invest some time in figuring out what the equivalent Windows commands are to achive the same result.
+
 ## pre work
 
 ### get an aws account
