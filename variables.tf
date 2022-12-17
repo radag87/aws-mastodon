@@ -56,3 +56,9 @@ variable "registered_domain" {
   description = "The name of the domain that is to be used for this application (make sure you own this)"
   type        = string
 }
+
+variable "tags" {
+  description = "A map of tags to apply to resources"
+  type        = map(any)
+  default     = {}
+}

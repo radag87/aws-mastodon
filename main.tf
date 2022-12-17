@@ -10,12 +10,14 @@ data "http" "ip_address" {
 }
 
 locals {
-  tags = {
-    terraform   = "true"
-    environment = var.environment
-    expense     = var.expense
-    application = var.application
-  }
+  tags = merge(var.tags,
+    {
+      terraform   = "true"
+      environment = var.environment
+      expense     = var.expense
+      application = var.application
+    }
+  )
   server_name = "${var.application}-${var.environment}-builder"
 }
 
