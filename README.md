@@ -52,3 +52,11 @@ cd ~/myapp
 
 ```
 
+
+## resources
+
+* s3 bucket
+* s3 log bucket
+* efs
+* rds postgres
+* 
