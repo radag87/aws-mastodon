@@ -49,7 +49,13 @@ variable "private_subnets" {
 variable "public_subnets" {
   description = "The CIDR ranges for the public subnets"
   type        = list(string)
-  default     = ["192.168.10.0/24", "192.168.20.0/24", "192.168.30.0/24"]
+  default     = ["192.168.11.0/24", "192.168.12.0/24", "192.168.13.0/24"]
+}
+
+variable "database_subnets" {
+  description = "The CIDR ranges for the database subnets"
+  type        = list(string)
+  default     = ["192.168.21.0/24", "192.168.22.0/24", "192.168.23.0/24"]
 }
 
 variable "registered_domain" {
@@ -61,4 +67,10 @@ variable "tags" {
   description = "A map of tags to apply to resources"
   type        = map(any)
   default     = {}
+}
+
+variable "enable_bucket_logging" {
+  description = "A toggle to deterine if bucket logging should be enabled (default is true)"
+  type        = bool
+  default     = true
 }

@@ -26,6 +26,11 @@ locals {
   }
 }
 
+#
+# networking
+# this section of the config builds the network the application runs in
+# 
+
 # referenece https://registry.terraform.io/modules/terraform-aws-modules/vpc/aws/latest
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
@@ -34,25 +39,33 @@ module "vpc" {
   name = "${var.application}-${var.environment}"
   cidr = var.vpc_cidr
 
-  azs                   = var.azs
-  private_subnets       = var.private_subnets
-  private_subnet_suffix = "private"
-  public_subnets        = var.public_subnets
-  public_subnet_suffix  = "public"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  azs              = var.azs
+  private_subnets  = var.private_subnets
+  public_subnets   = var.public_subnets
   database_subnets = var.database_subnets
-  database_subnet_suffix = "database"
 
   # One NAT Gateway per subnet 
   enable_nat_gateway     = true
   single_nat_gateway     = false
-  one_nat_gateway_per_az = false
+  one_nat_gateway_per_az = true
   enable_vpn_gateway     = false
 
   tags = local.tags
 }
 
+#
+# s3
+# this section of the config is responsible for the creation of two resources
+# * the s3 logging bucket (optional but defaults to true)
+# * the s3 bucket that is used by mastodon to store uploads
+#
+
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket
 resource "aws_s3_bucket" "log_bucket" {
+  count               = var.enable_bucket_logging ? 1 : 0
   bucket              = local.s3.log_bucket
   object_lock_enabled = true
   tags = merge(local.tags,
@@ -64,13 +77,15 @@ resource "aws_s3_bucket" "log_bucket" {
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_acl
 resource "aws_s3_bucket_acl" "log_bucket_acl" {
-  bucket = aws_s3_bucket.log_bucket.id
+  count  = var.enable_bucket_logging ? 1 : 0
+  bucket = aws_s3_bucket.log_bucket[0].id
   acl    = "log-delivery-write"
 }
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_server_side_encryption_configuration
 resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryption" {
-  bucket                = aws_s3_bucket.log_bucket.id
+  count                 = var.enable_bucket_logging ? 1 : 0
+  bucket                = aws_s3_bucket.log_bucket[0].id
   expected_bucket_owner = data.aws_caller_identity.current.account_id
   rule {
     apply_server_side_encryption_by_default {
@@ -81,7 +96,8 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "log_bucket_encryp
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_versioning
 resource "aws_s3_bucket_versioning" "log_bucket_versioning" {
-  bucket = aws_s3_bucket.log_bucket.id
+  count  = var.enable_bucket_logging ? 1 : 0
+  bucket = aws_s3_bucket.log_bucket[0].id
   versioning_configuration {
     status = "Enabled"
   }
@@ -89,7 +105,8 @@ resource "aws_s3_bucket_versioning" "log_bucket_versioning" {
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_lifecycle_configuration
 resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
-  bucket = aws_s3_bucket.log_bucket.id
+  count  = var.enable_bucket_logging ? 1 : 0
+  bucket = aws_s3_bucket.log_bucket[0].id
   rule {
     id = "deleteAfter400days"
 
@@ -109,7 +126,8 @@ resource "aws_s3_bucket_lifecycle_configuration" "log_bucket_lifecycle" {
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_public_access_block
 resource "aws_s3_bucket_public_access_block" "log_bucket_blocks" {
-  bucket                  = aws_s3_bucket.log_bucket.id
+  count                   = var.enable_bucket_logging ? 1 : 0
+  bucket                  = aws_s3_bucket.log_bucket[0].id
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
@@ -163,6 +181,7 @@ resource "aws_s3_bucket_lifecycle_configuration" "bucket_lifecycle" {
 
 # reference https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_logging
 resource "aws_s3_bucket_logging" "bucket_logging" {
+  count         = var.enable_bucket_logging ? 1 : 0
   bucket        = aws_s3_bucket.bucket.id
   target_bucket = local.s3.log_bucket
   target_prefix = local.s3.log_prefix
@@ -185,3 +204,10 @@ resource "aws_s3_bucket_ownership_controls" "bucket_owner" {
     object_ownership = "BucketOwnerEnforced"
   }
 }
+
+#
+# efs
+# this section of the config is responsible for the creation of the file system that is used 
+# by the mastodon service
+#
+

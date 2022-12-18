@@ -1,9 +1,10 @@
 # aws-mastodon
+
 WIP mastodon running on aws serverless
 
 ## about me
 
-* I know AWS. In my opinion, I have a working knowlege of AWS. I am not an "expert". 
+* I know AWS. In my opinion, I have a working knowlege of AWS. I am not an "expert".
 * I am not an employee of Amazon.com or AWS.
 * I am not looking for a job. There are other folks out there who are, seek them out. If this ever changes, I will update this bullet point.
 * I do not know Azure or Google Cloud Plaform. If you do and want to translate into those plafoms, feel free. You won't hurt my feelings. I know there are other cloud platforms out there, but I only have a little free time.
@@ -21,7 +22,7 @@ I have managed to avoid using a Windows computer since Windows XP. That means th
 
 ### get an aws account
 
-1. [get an aws account] (https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/)
+1. [get an aws account] (<https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>)
 1. [get the aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 1. [configure aws credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
 1. test your access - If you can run this command `aws account get-contact-information` and get back familiar information, then you have cleared the first hurdle.
@@ -46,12 +47,11 @@ Now that the prework is done, you are ready to create your environment.
 
 create a folder
 
-```
+```bash
 mkdir -p ~/myapp
 cd ~/myapp
 
 ```
-
 
 ## resources
 
@@ -59,4 +59,9 @@ cd ~/myapp
 * s3 log bucket
 * efs
 * rds postgres
-* 
+
+## toggles
+
+| variable              | description                                    | default |
+|-----------------------|------------------------------------------------|---------|
+| enable_bucket_logging | create an s3 bucket to log access to s3 bucket | true    |

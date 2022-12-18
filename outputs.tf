@@ -31,11 +31,11 @@ output "my_ip" {
 }
 
 output "s3_log_bucket_id" {
-  value = aws_s3_bucket.log_bucket.id
+  value = var.enable_bucket_logging ? aws_s3_bucket.log_bucket[0].id : null
 }
 
 output "s3_log_bucket_arn" {
-  value = aws_s3_bucket.log_bucket.arn
+  value = var.enable_bucket_logging ? aws_s3_bucket.log_bucket[0].arn : null
 }
 
 output "s3_bucket_id" {
