@@ -74,3 +74,15 @@ variable "enable_bucket_logging" {
   type        = bool
   default     = true
 }
+
+variable "enable_efs_backups" {
+  description = "A toggle to determine if backups of the EFS volume are to be taken (default is true)"
+  type        = bool
+  default     = true
+}
+
+variable "efs_replica_region" {
+  description = "The region where the efs replica should be placed"
+  type        = string
+  default     = ""
+}

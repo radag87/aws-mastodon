@@ -24,6 +24,7 @@ locals {
     log_bucket = lower("${var.application}-${var.aws_region}-${var.environment}-access-logs")
     log_prefix = lower("${var.application}-${var.aws_region}-${var.environment}-log/")
   }
+  efs_backups = var.enable_efs_backups == true ? "ENABLED" : "DISABLED"
 }
 
 #
@@ -211,3 +212,81 @@ resource "aws_s3_bucket_ownership_controls" "bucket_owner" {
 # by the mastodon service
 #
 
+resource "aws_efs_file_system" "efs" {
+  creation_token   = "${var.application}-${var.environment}-efs"
+  encrypted        = true
+  performance_mode = "generalPurpose"
+  throughput_mode  = "bursting"
+
+  lifecycle_policy {
+    transition_to_ia                    = "AFTER_30_DAYS"
+    transition_to_primary_storage_class = "AFTER_1_ACCESS"
+  }
+
+  tags = merge(local.tags,
+    {
+      Name = "${var.application}-${var.environment}"
+    }
+  )
+}
+
+resource "aws_efs_backup_policy" "efs_backup" {
+  file_system_id = aws_efs_file_system.efs.id
+
+  backup_policy {
+    status = local.efs_backups
+  }
+}
+
+resource "aws_efs_access_point" "efs_ap" {
+  file_system_id = aws_efs_file_system.efs.id
+  posix_user {
+    uid = 1000
+    gid = 1000
+  }
+  root_directory {
+    creation_info {
+      owner_uid   = 1000
+      owner_gid   = 1000
+      permissions = "0644"
+    }
+    path = "/mastodon_data"
+  }
+}
+
+data "aws_iam_policy_document" "efs_policy_doc" {
+  statement {
+    sid = "AllowEFSAccess"
+
+    actions = [
+      "elasticfilesystem:ClientMount",
+      "elasticfilesystem:ClientWrite"
+    ]
+
+    resources = [
+      aws_efs_file_system.efs.arn
+    ]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:SecureTransport"
+      values   = ["true"]
+    }
+  }
+}
+
+
+resource "aws_efs_file_system_policy" "policy" {
+  file_system_id                     = aws_efs_file_system.efs.id
+  bypass_policy_lockout_safety_check = false
+  policy                             = data.aws_iam_policy_document.efs_policy_doc.json
+}
+
+resource "aws_efs_replication_configuration" "efs_replica" {
+  count                 = length(var.efs_replica_region) == 0 ? 0 : 1
+  source_file_system_id = aws_efs_file_system.efs.id
+
+  destination {
+    region = var.efs_replica_region
+  }
+}

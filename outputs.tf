@@ -14,6 +14,10 @@ output "vpc_id" {
   value = module.vpc.vpc_id
 }
 
+output "vpc_database_subnets" {
+  value = module.vpc.database_subnets[*]
+}
+
 output "vpc_private_subnets" {
   value = module.vpc.private_subnets[*]
 }
@@ -46,3 +50,22 @@ output "s3_bucket_arn" {
   value = aws_s3_bucket.bucket.arn
 }
 
+output "efs_id" {
+  value = aws_efs_file_system.efs.id
+}
+
+output "efs_arn" {
+  value = aws_efs_file_system.efs.arn
+}
+
+output "efs_dns" {
+  value = aws_efs_file_system.efs.dns_name
+}
+
+output "efs_ap_id" {
+  value = aws_efs_access_point.efs_ap.id
+}
+
+output "efs_ap_arn" {
+  value = aws_efs_access_point.efs_ap.arn
+}

@@ -25,7 +25,7 @@ I have managed to avoid using a Windows computer since Windows XP. That means th
 1. [get an aws account] (<https://aws.amazon.com/premiumsupport/knowledge-center/create-and-activate-aws-account/>)
 1. [get the aws cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 1. [configure aws credentials](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html)
-1. test your access - If you can run this command `aws account get-contact-information` and get back familiar information, then you have cleared the first hurdle.
+1. test your access - If you can run this command `aws sts get-caller-identity` and get back familiar information, then you have cleared the first hurdle.
 
 ### get and configure Terraform
 
@@ -64,4 +64,11 @@ cd ~/myapp
 
 | variable              | description                                    | default |
 |-----------------------|------------------------------------------------|---------|
-| enable_bucket_logging | create an s3 bucket to log access to s3 bucket | true    |
+| enable_bucket_logging | create an s3 bucket to log s3 bucket activity  | true    |
+| enable_efs_backups    | create backups of the efs volume               | true    |
+
+## variables
+
+| variable              | description                                                    | default |
+|-----------------------|----------------------------------------------------------------|---------|
+| efs_replica_region    | if populated, the region where the efs replica will be sent to | ""      |
